@@ -310,6 +310,16 @@ Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
     stderr.writeln('review: uncommitted changes are NOT reviewed; '
         'commit them and refresh to see them.');
   }
+  // Both views are rendered into the page so switching between them keeps
+  // comments in place, which doubles the node count. Past roughly this size
+  // the browser gets slow, and it is better to say so than to leave someone
+  // wondering why. 60k lines produces about 17 MB.
+  if (doc.lines.length > 15000) {
+    stderr.writeln('review: this diff is large (${doc.lines.length} lines); '
+        'the page will be slow to open.');
+    stderr.writeln('review: reviewing one commit at a time, rather than a '
+        'whole branch, keeps it manageable.');
+  }
   // An agent's MCP client connects to whatever .mcp.json said. If we could not
   // get that port, its tools are pointed somewhere else — possibly at another
   // repository's review, where a reply would land on the wrong code.
