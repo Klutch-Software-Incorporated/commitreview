@@ -98,15 +98,6 @@ Copy `.mcp.json.example` into the repository you're reviewing as `.mcp.json`:
 **Start commitreview before you start your agent** — MCP clients connect once,
 at session start, so a server that isn't listening yet won't be found.
 
-Then install the skill, so the agent knows the workflow without being told it
-every time:
-
-```sh
-mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
-```
-
-See [skills/](skills/) for per-project installation and other agents.
-
 Then the loop is:
 
 1. Leave your comments.
@@ -117,6 +108,67 @@ Then the loop is:
    seconds, showing the new commit as the next patchset.
 
 Your comments come with you, attached to the same code.
+
+## The agent skill
+
+A skill ships with commitreview that teaches an agent this whole workflow, so
+you don't have to explain it every session. Without it, agents reliably get
+one thing wrong: **they leave changes uncommitted**, which makes it look like
+they did nothing, because only commits are reviewed.
+
+### Install it
+
+If you cloned the repository:
+
+```sh
+mkdir -p ~/.claude/skills
+cp -r skills/commitreview ~/.claude/skills/
+```
+
+If you installed with `dart pub global activate` and have no clone, fetch the
+skill on its own:
+
+```sh
+mkdir -p ~/.claude/skills/commitreview
+curl -fsSL -o ~/.claude/skills/commitreview/SKILL.md \
+  https://raw.githubusercontent.com/Klutch-Software-Incorporated/commitreview/main/skills/commitreview/SKILL.md
+```
+
+For a single project instead of your whole machine, use `.claude/skills/` in
+the repository, so it travels with the code and your team gets it too.
+
+On Windows the global path is `%USERPROFILE%\.claude\skills\`.
+
+Restart your agent afterwards, or start a new session, so it picks the skill
+up.
+
+### Use it
+
+Just ask. The skill triggers on what you'd say anyway:
+
+> open a review of your work
+
+> I've left some comments
+
+> check the review
+
+Or invoke it directly with `/commitreview`.
+
+Asking for a review starts a server for the current repository — reusing one
+that's already running rather than starting a second — hands you the URL, and
+waits. Say when you're done commenting and the agent picks it up from there.
+
+### What it handles
+
+- Finding an existing server before starting one, by asking each candidate
+  port `/whoami`, since a busy port means the port isn't fixed
+- Talking to the server over MCP where available, and over plain HTTP where
+  not — which is the normal case for a server started mid-session
+- Committing before refreshing, so its work is actually visible to you
+- Answering a question rather than silently rewriting the code, when what you
+  left was a question
+
+See [skills/](skills/) for use with agents other than Claude Code.
 
 ## How comments survive new commits
 
