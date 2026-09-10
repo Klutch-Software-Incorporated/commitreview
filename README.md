@@ -98,6 +98,15 @@ Copy `.mcp.json.example` into the repository you're reviewing as `.mcp.json`:
 **Start commitreview before you start your agent** — MCP clients connect once,
 at session start, so a server that isn't listening yet won't be found.
 
+Then install the skill, so the agent knows the workflow without being told it
+every time:
+
+```sh
+mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
+```
+
+See [skills/](skills/) for per-project installation and other agents.
+
 Then the loop is:
 
 1. Leave your comments.
