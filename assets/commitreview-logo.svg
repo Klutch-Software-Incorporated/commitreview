@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 154" role="img" aria-labelledby="title">
+  <title id="title">commitreview</title>
+
+  <!-- Outline and wordmark follow the viewer's colour scheme; the commit node
+       keeps its colour either way. -->
+  <style>
+    .ink { stroke: #182230; }
+    .word { fill: #182230; }
+    @media (prefers-color-scheme: dark) {
+      .ink { stroke: #e6edf3; }
+      .word { fill: #e6edf3; }
+    }
+  </style>
+
+  <g transform="translate(16 10) scale(0.55)">
+    <path
+      class="ink"
+      d="M48 36h160a20 20 0 0 1 20 20v112a20 20 0 0 1-20 20h-54l-34 32v-32H48a20 20 0 0 1-20-20V56a20 20 0 0 1 20-20Z"
+      fill="none"
+      stroke-width="18"
+      stroke-linejoin="round"
+    />
+    <path class="ink" d="M64 112h48m32 0h48" fill="none" stroke-width="18" stroke-linecap="round" />
+    <circle class="ink" cx="128" cy="112" r="24" fill="#35B67A" stroke-width="14" />
+  </g>
+
+  <!-- An explicit alphabetic baseline rather than dominant-baseline, which
+       renderers disagree about. y is chosen so the cap height centres on the
+       bubble body: bubble centre 71.6, cap height ~0.72em, so 71.6 + 72*0.36. -->
+  <text
+    class="word"
+    x="178"
+    y="97.5"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-size="72"
+    font-weight="600"
+    letter-spacing="-1.5"
+  >commitreview</text>
+</svg>

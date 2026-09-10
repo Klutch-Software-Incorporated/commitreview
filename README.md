@@ -1,91 +1,101 @@
-<img src="assets/commitreview-icon.svg" alt="" width="88" align="right">
+<h1 align="center">
+  <img src="assets/commitreview-logo.svg" alt="commitreview" width="380">
+</h1>
 
-# commitreview
+<!-- Screenshot of the review UI goes here. -->
 
-Review a commit in your browser, leave comments on the lines you care about,
-and hand them to your AI coding agent — which answers your questions inline,
-makes the changes, and commits them back into the same review.
+**commitreview** is a CLI tool that opens a commit's diff in your browser for
+review, then hands the comments you leave to your AI coding agent so it can
+answer them inline and commit the changes back as the next round.
 
-Then you review the next commit, with your comments still attached to the
-right lines.
+## ⚡ Quickstart
 
-Your editor can already show you a diff, but it gives you nowhere to *respond*
-to one — feedback gets retyped into a chat window, detached from the code it
-was about. And half of review isn't "change this", it's "why did you do it
-this way?". commitreview gives each line a conversation instead.
+Install the tool, then the skill that teaches your agent to use it:
 
-## Requirements
-
-- [Dart SDK](https://dart.dev/get-dart) 3.5 or newer
-- git
-- A browser
-
-## Install
-
-```sh
+```bash
 dart pub global activate --source git \
   https://github.com/Klutch-Software-Incorporated/commitreview.git
+commitreview install-skill
 ```
 
-That puts a `commitreview` executable in Dart's pub cache. Add the cache's
-`bin` to your `PATH` to call it directly:
+Restart your agent so it picks up the skill. Then from any git repository:
 
-| Platform | Add to `PATH` |
-|---|---|
-| macOS / Linux | `$HOME/.pub-cache/bin` |
-| Windows | `%LOCALAPPDATA%\Pub\Cache\bin` |
-
-Without that, `dart pub global run commitreview` works from anywhere.
-
-To update later, run the same `activate` command again. To remove it,
-`dart pub global deactivate commitreview`.
-
-### From a clone
-
-```sh
-git clone https://github.com/Klutch-Software-Incorporated/commitreview.git
-cd commitreview
-dart pub get
-dart run bin/commitreview.dart          # run it directly
-dart compile exe bin/commitreview.dart -o commitreview   # or build a binary
+```bash
+commitreview  # review the latest commit in the browser
 ```
 
-The compiled binary is self-contained — there are no runtime dependencies, so
-you can drop it anywhere on your `PATH` and forget about it.
+Click any line to comment, then tell your agent you've left comments. It
+replies to what you asked, commits what you wanted changed, and the new commit
+becomes the next round — with your comments still on the right lines.
 
-## Use
+If `commitreview` isn't found, add Dart's pub cache to your `PATH`
+(`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows), or run
+it as `dart pub global run commitreview`.
 
-From inside a git repository:
+## 🚀 Usage
 
-```sh
-commitreview              # review the latest commit (HEAD~1..HEAD)
-commitreview main         # review everything since main
+### Reviewing
+
+```bash
+commitreview           # the latest commit (HEAD~1..HEAD)
+commitreview main      # everything since main
+commitreview abc123    # everything since a specific commit
 ```
 
-It prints a URL and opens your browser. Click any line to comment; click
-**Reply** on a thread to add to it. A line can carry several separate threads.
+The server runs until you stop it, and comments save as you write them. A
+single line can carry several separate threads.
 
-| Option | |
-|---|---|
-| `--repo <path>` | review a different repository |
-| `--port <n>` | listen port, default 4970 |
-| `--no-open` | don't launch a browser |
-| `--split` / `--unified` | pick the starting diff view |
-| `--out <file>` | also write the review to a file on exit |
-
-The server keeps running until you stop it. Comments save as you write them,
-into `.review/threads.json` in your repository — a directory that ignores
-itself, so review state never shows up as something to review.
+| Flag | Default | Description |
+| --- | --- | --- |
+| `<base>` | `HEAD~1` | Review everything since this commit, branch or tag |
+| `--repo <path>` | cwd | Repository to review |
+| `--port <n>` | 4970 | Listen port; takes the next free one if busy |
+| `--no-open` | false | Don't launch a browser |
+| `--split` | — | Start in side-by-side view |
+| `--unified` | — | Start in unified view |
+| `--out <file>` | — | Also write the review to a file when the server stops |
+| `-h`, `--help` | — | Show usage |
 
 **Uncommitted work is not reviewed.** Commits are the unit of review, the way
-they are in Gerrit — so commit, then refresh. When you do, your comments are
-carried onto the new commit by git: one that moved goes with it, one whose
-line was edited is marked, and one whose line is gone is kept and shown
-against the commit it was written on.
+they are in Gerrit — so commit, then refresh. Your comments are carried onto
+the new commit by git: one whose line moved goes with it, one whose line was
+edited is marked, and one whose line is gone is kept and shown against the
+commit it was written on.
 
-## Connecting your agent
+Comments live in `.review/threads.json` in your repository, in a directory that
+ignores itself so review state never shows up as something to review.
 
-Copy `.mcp.json.example` into the repository you're reviewing as `.mcp.json`:
+### install-skill
+
+Writes the bundled agent skill, so your agent knows how to open a review, read
+your comments, reply, commit and refresh without being told each session.
+
+```bash
+commitreview install-skill             # every project on this machine
+commitreview install-skill --project   # just this repository
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--project` | false | Install into `./.claude/skills` so it travels with the repo |
+| `--repo <path>` | cwd | With `--project`, which repository to install into |
+| `--force` | false | Overwrite even if the file was edited locally |
+| `-h`, `--help` | — | Show usage |
+
+Re-running is a no-op when nothing changed, and updates the file when the
+bundled skill has moved on — so it's safe after an upgrade.
+
+## 🤖 Working with an agent
+
+The skill covers the workflow, but two things are worth knowing yourself.
+
+**Start commitreview before your agent.** MCP clients connect once, at session
+start, so a server that isn't listening yet won't show up as tools. An agent
+that starts the server itself falls back to plain HTTP against the same
+endpoint — that works, but it's second best.
+
+**Point your agent at it.** Copy `.mcp.json.example` into the repository you're
+reviewing as `.mcp.json`:
 
 ```json
 {
@@ -95,75 +105,16 @@ Copy `.mcp.json.example` into the repository you're reviewing as `.mcp.json`:
 }
 ```
 
-**Start commitreview before you start your agent** — MCP clients connect once,
-at session start, so a server that isn't listening yet won't be found.
+The tools are `review_pending`, `review_reply`, `review_resolve`,
+`review_refresh` and `review_status`. Servers also answer `/whoami`, so an
+agent can tell several apart when you have more than one review open.
 
-Then the loop is:
+See [skills/](skills/) for the skill itself, and for use with agents other than
+Claude Code.
 
-1. Leave your comments.
-2. Tell the agent to check the review.
-3. It replies inline where you asked something, and edits where you asked for
-   a change.
-4. It commits and refreshes. Your tab updates itself within a couple of
-   seconds, showing the new commit as the next patchset.
+## 🛠️ Development
 
-Your comments come with you, attached to the same code.
-
-## The agent skill
-
-A skill ships with commitreview that teaches an agent this whole workflow, so
-you don't have to explain it every session. Without it, agents reliably get
-one thing wrong: **they leave changes uncommitted**, which makes it look like
-they did nothing, because only commits are reviewed.
-
-### Install it
-
-The skill is bundled inside the binary, so this needs nothing else — no
-clone, no download, no other tooling:
-
-```sh
-commitreview install-skill             # every project on this machine
-commitreview install-skill --project   # just this repository
-```
-
-Re-running is a no-op if nothing changed, and updates the file if the bundled
-skill has moved on — so it's safe after an upgrade. It writes to
-`~/.claude/skills/`, or `%USERPROFILE%\.claude\skills\` on Windows.
-
-Restart your agent afterwards, or start a new session, so it picks the skill
-up.
-
-### Use it
-
-Just ask. The skill triggers on what you'd say anyway:
-
-> open a review of your work
-
-> I've left some comments
-
-> check the review
-
-Or invoke it directly with `/commitreview`.
-
-Asking for a review starts a server for the current repository — reusing one
-that's already running rather than starting a second — hands you the URL, and
-waits. Say when you're done commenting and the agent picks it up from there.
-
-### What it handles
-
-- Finding an existing server before starting one, by asking each candidate
-  port `/whoami`, since a busy port means the port isn't fixed
-- Talking to the server over MCP where available, and over plain HTTP where
-  not — which is the normal case for a server started mid-session
-- Committing before refreshing, so its work is actually visible to you
-- Answering a question rather than silently rewriting the code, when what you
-  left was a question
-
-See [skills/](skills/) for use with agents other than Claude Code.
-
-## Development
-
-```sh
+```bash
 dart test
 dart run tool/check_page_js.dart    # the page script lives in a Dart string
 dart run tool/embed_skill.dart      # after editing skills/commitreview/SKILL.md
@@ -174,15 +125,28 @@ a Dart string, so a broken literal compiles perfectly and then takes out the
 entire UI in the browser. It runs `node --check` over the real script.
 
 `embed_skill` regenerates `lib/src/skill.g.dart` from the skill markdown, which
-is what lets `commitreview install-skill` work without a clone. The markdown is
-the source of truth; CI regenerates and fails if the committed copy is behind.
+is what lets `install-skill` work without a clone. The markdown is the source of
+truth; CI regenerates and fails if the committed copy is behind.
 
-The tests build diffs by hand instead of shelling out to git, so they're fast
-and deterministic. They cover the cases that actually broke while this was
-being written — a shifted line, an edited line, a deleted line, a renamed
-file, an insertion inside a rewritten block, and a review resuming after a
-restart with its base intact.
+To build a standalone binary:
 
-## License
+```bash
+git clone https://github.com/Klutch-Software-Incorporated/commitreview.git
+cd commitreview
+dart pub get
+dart compile exe bin/commitreview.dart -o commitreview
+```
+
+There are no runtime dependencies, so the result can be dropped anywhere on
+your `PATH`.
+
+## 📋 Requirements
+
+- [Dart SDK](https://dart.dev/get-dart) 3.5 or newer
+- A git repository with commits to review
+- A browser
+- Node.js, for `tool/check_page_js.dart` only — not needed to run the tool
+
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
