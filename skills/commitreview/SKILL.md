@@ -41,17 +41,31 @@ already covers this repository, use it and give the user its URL. **Never
 start a second server for a repository that already has one, and never stop a
 server the user started.**
 
-If none is running, start one in the background from the repository root:
+If none is running, start one in the background from the repository root.
+First pick the command — `<cr>` below — since how it is installed varies:
+
+- `commitreview`, if it resolves.
+- `commitreview.bat` on Windows when you are running through a POSIX shell.
+  `dart pub global activate` installs a `.bat` shim, which is on `PATH` but
+  which bash will not find without the extension.
+- `dart pub global run commitreview` otherwise — always works if the package
+  is activated, just slower to start.
+- `./commitreview.exe` or `dart run bin/commitreview.dart` when working from
+  a clone.
 
 ```bash
-commitreview > /tmp/commitreview.log 2>&1 &
+<cr> > /tmp/commitreview.log 2>&1 &
 sleep 2
 grep -m1 'http://' /tmp/commitreview.log
 ```
 
-- `commitreview` alone reviews the latest commit (`HEAD~1..HEAD`).
-- `commitreview <ref>` reviews everything since that ref, e.g.
-  `commitreview main` for a whole branch.
+If the log is empty after a couple of seconds, wait and check again — a first
+run compiles. If it reports an error, show it to the user rather than
+retrying blindly.
+
+- With no argument it reviews the latest commit (`HEAD~1..HEAD`).
+- With a ref it reviews everything since that ref, e.g. `<cr> main` for a
+  whole branch.
 
 Pick the one that matches what the user wants reviewed. If you have made
 several commits they have not seen, a base ref covering them all is usually
