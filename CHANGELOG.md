@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+- Adds an example, which is what pub.dev was missing: a walkthrough of the CLI
+  workflow, and a runnable one for the line-mapping API, which is the part of
+  this worth using on its own.
+
 ## 0.5.0
 
 Setting up a repository took four manual steps, and the CLI's errors sent you

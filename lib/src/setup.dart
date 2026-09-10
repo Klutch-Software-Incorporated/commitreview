@@ -10,7 +10,7 @@ import 'skill_install.dart';
 /// same version as a newer one is genuinely confusing: `dart pub global
 /// activate --source git` pins whatever commit was current at the time, so
 /// two people on "0.4.0" can have different builds.
-const version = '0.5.0';
+const version = '0.5.1';
 
 const _mcpServerName = 'commitreview';
 
