@@ -8,21 +8,28 @@ Without one, an agent has to be told the workflow every time, and will
 typically forget the part that matters most: **commitreview reviews commits,
 so uncommitted edits are invisible to you.**
 
-## Claude Code
+## Installing
 
-The skill is bundled inside the `commitreview` binary, so you do not need this
-directory — or a clone — to install it:
+You need neither this directory nor a clone.
+
+**From the binary** — the skill is bundled inside it:
 
 ```sh
 commitreview install-skill             # every project on this machine
 commitreview install-skill --project   # just this repository
 ```
 
-`SKILL.md` here is the source those are generated from
-(`dart run tool/embed_skill.dart`), and is what you read and edit. CI fails if
-the embedded copy falls behind it.
+**With [skills.sh](https://skills.sh)** — the layout here follows the
+ecosystem convention (`skills/<name>/SKILL.md`), so this repository works with
+it as-is, and covers Codex, Cursor, Zed, Amp and others rather than just
+Claude Code:
 
-Copying it by hand works too, if you would rather:
+```sh
+npx skills add Klutch-Software-Incorporated/commitreview -g   # global
+npx skills add Klutch-Software-Incorporated/commitreview      # this project
+```
+
+**By hand**, if you would rather:
 
 ```sh
 mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
@@ -30,17 +37,26 @@ mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
 
 On Windows, `%USERPROFILE%\.claude\skills\`.
 
-Claude loads it on its own when you say something like "I've left some
-comments" or "check the review". You can also invoke it directly with
+Claude loads the skill on its own when you say something like "open a review"
+or "I've left some comments". You can also invoke it directly with
 `/commitreview`.
 
-## Other agents
+## Editing it
 
-`commitreview/SKILL.md` is plain markdown with YAML frontmatter. The
-frontmatter's `description` is what tells an agent when the skill applies;
-the body is the instructions. Most agent frameworks that support skills or
-custom instructions can use it as-is, or you can paste the body into whatever
-system-prompt mechanism yours provides.
+`commitreview/SKILL.md` is the source of truth — it is what you read here and
+what every installer hands out. After changing it, regenerate the copy
+embedded in the binary:
+
+```sh
+dart run tool/embed_skill.dart
+```
+
+CI fails if the embedded copy falls behind, and a test asserts the two match.
+
+It is plain markdown with YAML frontmatter. The frontmatter's `description` is
+what tells an agent when the skill applies; the body is the instructions. Any
+framework supporting skills can use it as-is, or you can paste the body into
+whatever system-prompt mechanism yours provides.
 
 ## What it covers
 

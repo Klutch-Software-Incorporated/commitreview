@@ -118,26 +118,28 @@ they did nothing, because only commits are reviewed.
 
 ### Install it
 
-The skill is bundled inside the binary, so this needs nothing else — no
-clone, no download:
+Either way works; neither needs a clone.
+
+**From the binary.** The skill is bundled inside it, so this needs nothing
+else installed:
 
 ```sh
-commitreview install-skill
+commitreview install-skill             # every project on this machine
+commitreview install-skill --project   # just this repository
 ```
 
-That writes it to your user skills directory (`~/.claude/skills/` , or
-`%USERPROFILE%\.claude\skills\` on Windows), where it applies to every
-project.
+Re-running is a no-op if nothing changed, and updates the file if the bundled
+skill has moved on — so it's safe after an upgrade. It writes to
+`~/.claude/skills/`, or `%USERPROFILE%\.claude\skills\` on Windows.
 
-To install it into one repository instead, so it travels with the code and
-your team gets it too:
+**With [skills.sh](https://skills.sh).** If you already use the open agent
+skills ecosystem, this repository works with it directly, and covers Codex,
+Cursor, Zed, Amp and others rather than just Claude Code:
 
 ```sh
-commitreview install-skill --project
+npx skills add Klutch-Software-Incorporated/commitreview -g   # global
+npx skills add Klutch-Software-Incorporated/commitreview      # this project
 ```
-
-Running it again is a no-op if nothing changed, and updates the file if the
-bundled skill has moved on — so it's safe to re-run after upgrading.
 
 Restart your agent afterwards, or start a new session, so it picks the skill
 up.
