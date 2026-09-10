@@ -1,7 +1,7 @@
 # Skills
 
 Agent skills that teach a coding agent how to work through a commitreview
-review — reading your comments, replying inline, committing changes, and
+review: reading your comments, replying inline, committing changes, and
 picking up the next patchset.
 
 Without one, an agent has to be told the workflow every time, and will
@@ -41,9 +41,8 @@ or "I've left some comments". You can also invoke it directly with
 
 ## Editing it
 
-`commitreview/SKILL.md` is the source of truth — it is what you read here and
-what every installer hands out. After changing it, regenerate the copy
-embedded in the binary:
+`commitreview/SKILL.md` is the source of truth, and what every installer hands
+out. After changing it, regenerate the copy embedded in the binary:
 
 ```sh
 dart run tool/embed_skill.dart

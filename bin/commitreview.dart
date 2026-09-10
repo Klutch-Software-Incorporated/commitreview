@@ -1,20 +1,19 @@
-// review — a local code-review tool.
+// commitreview: a local code review tool.
 //
-// Renders `git diff` in the browser and lets you comment on any line. The
+// Serves a commit's diff in the browser and lets you comment on any line. The
 // server stays up and exposes those threads over MCP at /mcp, so an agent can
-// read them, reply inline, and call review_refresh after editing to rebuild
-// the diff. Threads re-anchor to the new diff by content.
+// read them, reply inline, and pick up the commits you make in response.
 //
-//   dart run commitreview                 # uncommitted changes (git diff HEAD)
-//   dart run commitreview main            # working tree vs main
-//   dart run commitreview --staged        # staged only
-//   dart run commitreview abc123 def456   # any two refs
+//   commitreview            # the latest commit (HEAD~1..HEAD)
+//   commitreview main       # everything since main
+//   commitreview install-skill
 //
 //   --repo <path>   run against another repo      --port <n>  default 4970
 //   --out <file>    also write the review to file --no-open   don't open browser
 //   --split         start in side-by-side view    --unified   start in unified
 //
-// No runtime dependencies. `dart compile exe bin/review.dart` for a binary.
+// No runtime dependencies. `dart compile exe bin/commitreview.dart` builds a
+// standalone binary.
 
 import 'dart:io';
 
@@ -40,7 +39,7 @@ options:
 
 Commits are the unit of review, as in Gerrit: the base is resolved once and
 pinned, and each new head commit becomes the next patchset. Uncommitted work
-is not reviewed — commit it, then refresh.
+is not reviewed, so commit it and then refresh.
 
 Comments anchor to (file, line) on the patchset they were raised on, and are
 carried onto later patchsets using git's own line mapping, so an edited line
@@ -127,7 +126,7 @@ Restart your agent afterwards so it picks the skill up.
 
   // A review already under way keeps the base it was started against, even
   // though HEAD~1 has moved on since. Anything unrecognisable in the stored
-  // file — including state written by an older version — is ignored rather
+  // file, including state written by an older version, is ignored rather
   // than allowed to bring the tool down.
   final saved = peekSaved(storeFor(repoRoot(repo)))?['target'];
   final target = Target.resolveFor(repo, refs.isEmpty ? null : refs.first,

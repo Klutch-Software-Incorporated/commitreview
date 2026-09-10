@@ -3,7 +3,7 @@
 //
 // Worth having as a real step: the template is a raw string, so a broken
 // string literal or an unescaped apostrophe inside it compiles cleanly, ships,
-// and then fails to parse in the browser — taking the entire UI with it. That
+// and then fails to parse in the browser, taking the entire UI with it. That
 // has happened once already.
 //
 //   dart run tool/check_page_js.dart

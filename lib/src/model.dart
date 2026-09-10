@@ -34,7 +34,7 @@ class Msg {
 
 /// A conversation attached to one line of one file.
 ///
-/// The anchor is `(file, side, line)` as of the patchset it was raised on —
+/// The anchor is `(file, side, line)` as of the patchset it was raised on:
 /// a real coordinate, not a fingerprint. Carrying it to a later patchset is
 /// git's job: see [Session.advance].
 class Thread {
@@ -45,8 +45,8 @@ class Thread {
   /// the context it was actually written in.
   final String raisedOn;
 
-  /// `new` — a line in the file as of [raisedOn]; carried forward on each
-  /// patchset. `old` — a line in the base, which is pinned, so these anchors
+  /// `new` is a line in the file as of [raisedOn], carried forward on each
+  /// patchset. `old` is a line in the base, which is pinned, so these anchors
   /// never move and never need mapping.
   final String side;
 
@@ -56,7 +56,7 @@ class Thread {
   /// Survived a patchset, but the line's content was edited.
   bool changed = false;
 
-  /// Not present in the latest patchset. Never deleted — still readable
+  /// Not present in the latest patchset. Never deleted, and still readable
   /// against the patchset it was raised on.
   bool notInLatest = false;
 
@@ -173,7 +173,7 @@ class Session {
   }
 
   /// Carries every open thread from one patchset to the next, using git's own
-  /// line mapping. A line git reports as deleted is deleted — there is no
+  /// line mapping. A line git reports as deleted is deleted. There is no
   /// guessing here, and no thresholds to tune.
   ///
   /// Returns a one-line summary of what moved.
@@ -189,7 +189,7 @@ class Session {
       final j = jsonDecode(store.readAsStringSync()) as Map<String, dynamic>;
       if (j['base'] != base) {
         stderr.writeln('review: ${store.path} holds a review of a different '
-            'base — starting a new one.');
+            'base. Starting a new one.');
         return;
       }
       for (final raw in (j['threads'] as List? ?? const [])) {
@@ -199,7 +199,7 @@ class Session {
       }
     } catch (e) {
       threads.clear();
-      stderr.writeln('review: could not read ${store.path} ($e) — '
+      stderr.writeln('review: could not read ${store.path} ($e); '
           'starting fresh.');
     }
   }
@@ -212,7 +212,7 @@ class Session {
   void save() {
     try {
       store.parent.createSync(recursive: true);
-      // Keep review state out of the repository's own diff — otherwise it
+      // Keep review state out of the repository's own diff. Otherwise it
       // shows up as a change to review, and gets committed by `git add -A`.
       final ignore = File('${store.parent.path}/.gitignore');
       if (!ignore.existsSync()) ignore.writeAsStringSync('*\n');

@@ -9,7 +9,7 @@ import 'target.dart';
 /// The rendered diff for the current patchset, and everything derived from it.
 ///
 /// Rebuilt whenever the head commit moves, which renumbers every raw line
-/// index — that is why threads anchor to `(file, line)` and are located into
+/// index, which is why threads anchor to `(file, line)` and are located into
 /// the render, rather than storing a diff offset.
 class Doc {
   final Target target;
@@ -41,7 +41,7 @@ class Doc {
   }
 
   /// Where [t] sits in the current render, or null when its line is not part
-  /// of this diff at all — either it was dropped, or the code around it
+  /// of this diff at all: either it was dropped, or the code around it
   /// settled back to matching the base.
   int? locate(Thread t) {
     for (var i = 0; i < metas.length; i++) {

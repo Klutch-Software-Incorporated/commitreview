@@ -13,8 +13,9 @@ import 'model.dart';
 bool _stop = false;
 
 /// Answered at `/whoami`, so a caller who finds several servers running can
-/// tell which repository and commit each one belongs to. Ports are not fixed
-/// — the default is taken when it is busy — so identity has to be askable.
+/// tell which repository and commit each one belongs to. Ports are not
+/// fixed, because the default is taken when it is busy, so identity has to
+/// be askable.
 Map<String, dynamic> _identity = const {};
 
 /// Opaque per-run id handed back on the MCP transport.
@@ -277,7 +278,7 @@ Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
   stderr.writeln('review: MCP endpoint $url/mcp');
   stderr.writeln('review: threads -> ${store.path}');
   if (target.dirty) {
-    stderr.writeln('review: note — uncommitted changes are NOT reviewed; '
+    stderr.writeln('review: uncommitted changes are NOT reviewed; '
         'commit them and refresh to see them.');
   }
   if (open) launch(url);

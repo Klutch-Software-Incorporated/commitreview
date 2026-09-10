@@ -107,7 +107,7 @@ section.fs.vd .fp{color:var(--mut);text-decoration:line-through}
 .c{flex:1 1 50%;min-width:0;overflow-x:auto}
 .c.e{background:var(--empty)}
 .r>.c:first-child{border-right:1px solid var(--bd)}
-/* comments — an inset conversation card, GitHub style */
+/* comments: an inset conversation card, GitHub style */
 .ed{margin:10px 16px 10px 58px;border:1px solid var(--acc);border-radius:6px;
   background:var(--pan);padding:10px 12px}
 .btns{margin-top:8px;display:flex;gap:8px;align-items:center}

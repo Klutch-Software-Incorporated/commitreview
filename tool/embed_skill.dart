@@ -2,8 +2,8 @@
 // skill ships inside the compiled binary and `commitreview skill install`
 // works without a clone of this repository.
 //
-// The markdown stays the source of truth — it is what people read on GitHub
-// and edit — and this copies it into Dart. CI regenerates and fails if the
+// The markdown stays the source of truth, since it is what people read on
+// GitHub and edit, and this copies it into Dart. CI regenerates and fails if the
 // result differs from what is committed.
 //
 //   dart run tool/embed_skill.dart
@@ -29,7 +29,7 @@ void main() {
   }
 
   File(_out).writeAsStringSync('''
-// GENERATED — do not edit. Run: dart run tool/embed_skill.dart
+// GENERATED. Do not edit. Run: dart run tool/embed_skill.dart
 // Source: $_source
 
 /// The agent skill, embedded so it can be installed from the binary alone.

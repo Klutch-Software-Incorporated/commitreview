@@ -5,7 +5,7 @@ class Mapped {
   /// The line in the target commit, or null if it is not present there.
   final int? line;
 
-  /// The path in the target commit — different from the source path when the
+  /// The path in the target commit, different from the source path when the
   /// file was renamed between the two commits.
   final String file;
 
@@ -18,7 +18,7 @@ class Mapped {
 }
 
 /// Character-bigram Dice coefficient. Used only to line up the two halves of
-/// a single replaced run against each other — never to search for a line.
+/// a single replaced run against each other, never to search for a line.
 double _similar(String a, String b) {
   List<String> grams(String s) {
     final t = s.trim().replaceAll(RegExp(r'\s+'), ' ');
@@ -44,7 +44,7 @@ double _similar(String a, String b) {
 
 /// Best order-preserving alignment of a run's removed lines onto its added
 /// lines. Returns, for each removed line, the index of the added line it
-/// became — or null when nothing in the run corresponds to it.
+/// became, or null when nothing in the run corresponds to it.
 ///
 /// Needed because git reports a rewritten block as a single "these N lines
 /// became these M lines" and says nothing about which became which. Runs are
@@ -114,9 +114,9 @@ class FileMap {
   /// Carries [line] from the source commit to the target.
   ///
   /// Three cases:
-  ///   * outside every hunk — shifted by the running offset, unchanged
-  ///   * inside a replaced run — aligned onto the added line it became
-  ///   * removed with nothing in the run corresponding to it — gone
+  ///   * outside every hunk: shifted by the running offset, unchanged
+  ///   * inside a replaced run: aligned onto the added line it became
+  ///   * removed with nothing in the run corresponding to it: gone
   Mapped map(int line) {
     var delta = 0;
     for (final h in _hunks) {
@@ -200,7 +200,7 @@ Map<String, FileMap> parseDiffMaps(String diff) {
 
 /// Line mappings for every file that differs between the two commits.
 /// Files absent from the result are byte-identical, so their lines map to
-/// themselves — callers should treat a missing entry as "unchanged".
+/// themselves, so callers should treat a missing entry as "unchanged".
 Map<String, FileMap> diffMaps(String repo, String fromSha, String toSha) {
   final raw = git(repo, [
     'diff',

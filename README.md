@@ -5,8 +5,8 @@
 <!-- Screenshot of the review UI goes here. -->
 
 Serve a commit's diff to your browser, comment on the lines you care about, and
-let your AI coding agent read those comments over MCP — answering what you
-asked, committing what you wanted changed, and handing you back the next round.
+let your AI coding agent read those comments over MCP so it can answer them and
+commit the changes back.
 
 ## Quickstart
 
@@ -25,8 +25,8 @@ commitreview  # review the latest commit in the browser
 ```
 
 Click any line to comment, then tell your agent you've left comments. It
-replies to what you asked, commits what you wanted changed, and the new commit
-becomes the next round — with your comments still on the right lines.
+replies to what you asked and commits what you wanted changed. That commit
+becomes the next round, with your comments still on the right lines.
 
 If `commitreview` isn't found, add Dart's pub cache to your `PATH`
 (`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows), or run
@@ -57,10 +57,10 @@ single line can carry several separate threads.
 | `-h`, `--help` | — | Show usage |
 
 **Uncommitted work is not reviewed.** Commits are the unit of review, the way
-they are in Gerrit — so commit, then refresh. Your comments are carried onto
-the new commit by git: one whose line moved goes with it, one whose line was
-edited is marked, and one whose line is gone is kept and shown against the
-commit it was written on.
+they are in Gerrit, so commit and then refresh. Git carries your comments onto
+the new commit: one whose line moved goes with it, one whose line was edited is
+marked, and one whose line is gone is kept and shown against the commit it was
+written on.
 
 Comments live in `.review/threads.json` in your repository, in a directory that
 ignores itself so review state never shows up as something to review.
@@ -83,7 +83,7 @@ commitreview install-skill --project   # just this repository
 | `-h`, `--help` | — | Show usage |
 
 Re-running is a no-op when nothing changed, and updates the file when the
-bundled skill has moved on — so it's safe after an upgrade.
+bundled skill has moved on, so it is safe to run after an upgrade.
 
 ## Working with an agent
 
@@ -92,7 +92,7 @@ The skill covers the workflow, but two things are worth knowing yourself.
 **Start commitreview before your agent.** MCP clients connect once, at session
 start, so a server that isn't listening yet won't show up as tools. An agent
 that starts the server itself falls back to plain HTTP against the same
-endpoint — that works, but it's second best.
+endpoint. That works, but it is second best.
 
 **Point your agent at it.** Copy `.mcp.json.example` into the repository you're
 reviewing as `.mcp.json`:
@@ -145,8 +145,8 @@ your `PATH`.
 - [Dart SDK](https://dart.dev/get-dart) 3.5 or newer
 - A git repository with commits to review
 - A browser
-- Node.js, for `tool/check_page_js.dart` only — not needed to run the tool
+- Node.js, for `tool/check_page_js.dart` only (not needed to run the tool)
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

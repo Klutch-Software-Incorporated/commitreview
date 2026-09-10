@@ -48,7 +48,7 @@ class Target {
   /// Returns null when the repository has no commits at all.
   ///
   /// [saved] is a previously persisted target, if any. It wins unless the
-  /// caller explicitly asked for a different base — otherwise resuming a
+  /// caller explicitly asked for a different base. Otherwise resuming a
   /// review after new commits would silently re-resolve `HEAD~1` to a
   /// different commit and start over, losing the conversation.
   static Target? resolveFor(String repo, String? baseRef,

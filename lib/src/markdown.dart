@@ -3,7 +3,7 @@ import 'doc.dart';
 import 'git.dart';
 import 'model.dart';
 
-/// The diff slice a thread points at — live if it is still in the current
+/// The diff slice a thread points at: live if it is still in the current
 /// patchset, otherwise the snapshot frozen when the comment was written.
 String threadCtx(Thread t, Doc doc) {
   final b = StringBuffer();
@@ -62,7 +62,7 @@ String pendingMd(Session s, Doc doc) {
   b.writeln('\n---');
   b.writeln('Answer a question with review_reply(thread, text) so it appears '
       'inline in the browser, and review_resolve(thread) once a thread is '
-      'handled. When you have made changes, commit them — then call '
+      'handled. When you have made changes, commit them, then call '
       'review_refresh to pick the commit up as the next patchset. Comments '
       'are carried across by git, so they stay on the right lines.');
   for (final t in open) {

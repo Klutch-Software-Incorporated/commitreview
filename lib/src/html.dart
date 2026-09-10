@@ -13,8 +13,8 @@ String buildHtml(List<String> lines, List<Meta> metas, String target,
     '__TARGET__': esc(target),
   };
   // Must be a single pass: chained replaceAll would re-scan already-substituted
-  // content, and a diff can legitimately contain these placeholder tokens —
-  // reviewing this very file does exactly that.
+  // content, and a diff can legitimately contain these placeholder tokens.
+  // Reviewing this very file does exactly that.
   return pageTemplate.replaceAllMapped(
       RegExp(r'__(?:TREE|UNIFIED|SPLIT|FORCEVIEW|VERSION|TARGET)__'),
       (m) => subs[m.group(0)]!);

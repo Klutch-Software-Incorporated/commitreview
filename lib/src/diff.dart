@@ -27,7 +27,7 @@ List<Meta> annotate(List<String> lines) {
 
   for (final l in lines) {
     if (l.startsWith('diff --git ')) {
-      // "diff --git a/x b/y" — take the b-side as the current file.
+      // "diff --git a/x b/y": take the b-side as the current file.
       final m = RegExp(r' b/(.*)$').firstMatch(l);
       if (m != null) file = m.group(1);
       inHunk = false;
@@ -86,7 +86,7 @@ bool _isChange(String l) =>
     !l.startsWith('---');
 
 /// One diff line as a clickable cell. `data-i` is always the index into the
-/// raw diff, in both views — that is what keeps comment anchoring identical.
+/// raw diff, in both views, which is what keeps comment anchoring identical.
 String cell(List<String> lines, List<Meta> metas, int i, bool rightSide) {
   final m = metas[i];
   final n = rightSide ? (m.newLine ?? m.oldLine) : (m.oldLine ?? m.newLine);
@@ -95,7 +95,7 @@ String cell(List<String> lines, List<Meta> metas, int i, bool rightSide) {
       '<span class="t">${esc(lines[i])}</span></div>';
 }
 
-/// One file in the diff, plus the raw-index range its lines occupy — the
+/// One file in the diff, plus the raw-index range its lines occupy. That
 /// range is what lets the sidebar count comments per file.
 class FileEntry {
   final String path;
