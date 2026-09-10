@@ -1,0 +1,20 @@
+# Dart / pub
+.dart_tool/
+.packages
+build/
+doc/api/
+
+# Compiled binaries — built with `dart compile exe`, not committed
+*.exe
+*.dill
+*.snapshot
+/commitreview
+
+# This tool's own state, if you review this repository with it
+.review/
+
+# Editors
+.idea/
+*.iml
+.vscode/
+.DS_Store

@@ -1,0 +1,21 @@
+name: commitreview
+description: >-
+  A local code review tool built around commits. Renders a commit's diff in the
+  browser, lets you comment on any line, and exposes those threads to an AI
+  agent over MCP so it can reply inline and pick up your next commit as the
+  next patchset.
+version: 0.4.0
+repository: https://github.com/Klutch-Software-Incorporated/commitreview
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+# No runtime dependencies: the whole tool is dart:io and dart:convert, so
+# `dart compile exe` yields a standalone binary with nothing to install.
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
+
+executables:
+  commitreview:

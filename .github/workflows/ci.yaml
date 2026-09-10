@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: dart analyze --fatal-infos
+
+      - name: Test
+        run: dart test
+
+      # The page's JavaScript lives inside a Dart raw string, so a syntax
+      # error there compiles fine and breaks the whole UI at runtime. It has
+      # happened; check it explicitly.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check the page script parses
+        run: dart run tool/check_page_js.dart
+
+      - name: Build
+        run: dart compile exe bin/commitreview.dart -o commitreview

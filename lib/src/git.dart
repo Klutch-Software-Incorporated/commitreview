@@ -1,0 +1,37 @@
+import 'dart:io';
+
+/// Thin wrapper around the git CLI. Returns null on failure rather than
+/// throwing: a review in progress should survive a bad ref or a transient
+/// error by keeping what it already has.
+String? git(String repo, List<String> args) {
+  try {
+    final r = Process.runSync('git', args, workingDirectory: repo);
+    if (r.exitCode != 0) return null;
+    return (r.stdout as String).replaceAll('\r\n', '\n');
+  } catch (_) {
+    return null;
+  }
+}
+
+String? gitLine(String repo, List<String> args) => git(repo, args)?.trim();
+
+/// Resolves [rev] to a full commit sha, or null if it does not exist.
+String? resolve(String repo, String rev) {
+  final sha = gitLine(repo, ['rev-parse', '--verify', '$rev^{commit}']);
+  return (sha == null || sha.isEmpty) ? null : sha;
+}
+
+/// The repository root, so state lands next to the repo rather than wherever
+/// the process happened to start.
+String repoRoot(String repo) =>
+    gitLine(repo, ['rev-parse', '--show-toplevel']) ?? repo;
+
+String shortSha(String sha) => sha.length > 8 ? sha.substring(0, 8) : sha;
+
+/// One-line summary of a commit, for labelling patchsets.
+String subjectOf(String repo, String sha) =>
+    gitLine(repo, ['log', '-1', '--format=%s', sha]) ?? '';
+
+/// Git's own empty-tree object. Lets the first commit in a repository be
+/// reviewed with the same code path as any other.
+const emptyTree = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';

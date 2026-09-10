@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "commitreview": {
+      "type": "http",
+      "url": "http://127.0.0.1:4970/mcp"
+    }
+  }
+}
