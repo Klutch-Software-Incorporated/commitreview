@@ -1,0 +1,12 @@
+# Normalise to LF everywhere, including in Windows working trees.
+#
+# Generated files are written with LF, so a CRLF checkout makes them look
+# permanently modified: the CI step that regenerates lib/src/skill.g.dart and
+# checks for drift would fail on Windows every time, and `dart format
+# --set-exit-if-changed` would too.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
