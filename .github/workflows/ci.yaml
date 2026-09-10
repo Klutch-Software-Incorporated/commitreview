@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
@@ -36,7 +36,7 @@ jobs:
       # The page's JavaScript lives inside a Dart raw string, so a syntax
       # error there compiles fine and breaks the whole UI at runtime. It has
       # happened; check it explicitly.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
       - name: Check the page script parses
