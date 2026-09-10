@@ -4,11 +4,11 @@
 
 <!-- Screenshot of the review UI goes here. -->
 
-**commitreview** is a CLI tool that opens a commit's diff in your browser for
-review, then hands the comments you leave to your AI coding agent so it can
-answer them inline and commit the changes back as the next round.
+Serve a commit's diff to your browser, comment on the lines you care about, and
+let your AI coding agent read those comments over MCP — answering what you
+asked, committing what you wanted changed, and handing you back the next round.
 
-## ⚡ Quickstart
+## Quickstart
 
 Install the tool, then the skill that teaches your agent to use it:
 
@@ -32,7 +32,7 @@ If `commitreview` isn't found, add Dart's pub cache to your `PATH`
 (`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows), or run
 it as `dart pub global run commitreview`.
 
-## 🚀 Usage
+## Usage
 
 ### Reviewing
 
@@ -85,7 +85,7 @@ commitreview install-skill --project   # just this repository
 Re-running is a no-op when nothing changed, and updates the file when the
 bundled skill has moved on — so it's safe after an upgrade.
 
-## 🤖 Working with an agent
+## Working with an agent
 
 The skill covers the workflow, but two things are worth knowing yourself.
 
@@ -112,7 +112,7 @@ agent can tell several apart when you have more than one review open.
 See [skills/](skills/) for the skill itself, and for use with agents other than
 Claude Code.
 
-## 🛠️ Development
+## Development
 
 ```bash
 dart test
@@ -140,13 +140,13 @@ dart compile exe bin/commitreview.dart -o commitreview
 There are no runtime dependencies, so the result can be dropped anywhere on
 your `PATH`.
 
-## 📋 Requirements
+## Requirements
 
 - [Dart SDK](https://dart.dev/get-dart) 3.5 or newer
 - A git repository with commits to review
 - A browser
 - Node.js, for `tool/check_page_js.dart` only — not needed to run the tool
 
-## 📄 License
+## License
 
 MIT — see [LICENSE](LICENSE).
