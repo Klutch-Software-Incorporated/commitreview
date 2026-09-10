@@ -29,7 +29,7 @@ usage: commitreview [<base>] [options]
 
 options:
   --repo <path>      repository to run in (default: cwd)
-  --port <n>         listen port (default: 4970)
+  --port <n>         listen port (default: 4970, or the next one free)
   --out <file>       also write the review to this file
   --no-open          do not launch a browser
   --split            start in side-by-side view
@@ -56,6 +56,7 @@ void main(List<String> argv) async {
   var port = 4970;
   var open = true;
   var forceView = ''; // '' = remember last choice, else 'spl' / 'uni'
+  var exactPort = false;
   String? outPath;
   final refs = <String>[];
 
@@ -65,6 +66,7 @@ void main(List<String> argv) async {
       repo = argv[++i];
     } else if (a == '--port' && i + 1 < argv.length) {
       port = int.parse(argv[++i]);
+      exactPort = true; // a port you asked for is not silently substituted
     } else if (a == '--out' && i + 1 < argv.length) {
       outPath = argv[++i];
     } else if (a == '--no-open') {
@@ -90,10 +92,12 @@ void main(List<String> argv) async {
   }
 
   // A review already under way keeps the base it was started against, even
-  // though HEAD~1 has moved on since.
-  final saved = peekSaved(storeFor(repoRoot(repo)));
+  // though HEAD~1 has moved on since. Anything unrecognisable in the stored
+  // file — including state written by an older version — is ignored rather
+  // than allowed to bring the tool down.
+  final saved = peekSaved(storeFor(repoRoot(repo)))?['target'];
   final target = Target.resolveFor(repo, refs.isEmpty ? null : refs.first,
-      saved: (saved?['target'] as Map?)?.cast<String, dynamic>());
+      saved: saved is Map ? saved.cast<String, dynamic>() : null);
   if (target == null) {
     stderr.writeln(refs.isEmpty
         ? 'review: no commits in this repository yet.'
@@ -107,5 +111,5 @@ void main(List<String> argv) async {
     stdout.writeln('No changes to review (${doc.label}).');
     exit(0);
   }
-  await serve(repo, port, open, doc, outPath);
+  await serve(repo, port, open, doc, outPath, exactPort: exactPort);
 }

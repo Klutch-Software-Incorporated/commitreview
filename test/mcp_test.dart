@@ -322,6 +322,19 @@ diff --git a/main.go b/main.go
       expect(t.patchsets.first.sha, 'sha1');
     });
 
+    test('state written by an older version is ignored, not fatal', () {
+      // Earlier releases stored `target` as a plain string. Casting it blindly
+      // crashed the tool on startup against any repository reviewed before.
+      for (final junk in <Object?>['HEAD', 42, <String>[], null]) {
+        // This is the guard bin/ applies: anything that is not a map is
+        // discarded rather than cast.
+        final saved = junk is Map ? junk.cast<String, dynamic>() : null;
+        expect(
+            () => Target.resolveFor('.', null, saved: saved), returnsNormally,
+            reason: 'saved target of ${junk.runtimeType}');
+      }
+    });
+
     test('naming a different base deliberately starts a new review', () {
       final saved = {
         'baseLabel': 'HEAD~1',

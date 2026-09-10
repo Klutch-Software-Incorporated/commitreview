@@ -12,6 +12,11 @@ import 'model.dart';
 /// after finishing the request so the response still gets flushed.
 bool _stop = false;
 
+/// Answered at `/whoami`, so a caller who finds several servers running can
+/// tell which repository and commit each one belongs to. Ports are not fixed
+/// — the default is taken when it is busy — so identity has to be askable.
+Map<String, dynamic> _identity = const {};
+
 /// Opaque per-run id handed back on the MCP transport.
 final _sid = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
 
@@ -81,6 +86,19 @@ Future<void> route(HttpRequest req, Session s, Doc doc) async {
       return;
     }
     await sendJson(r, decoded is List ? out : out.first);
+    return;
+  }
+
+  if (p == '/whoami') {
+    await sendJson(r, {
+      ..._identity,
+      'patchset': doc.target.head.n,
+      'patchsets': doc.target.patchsets.length,
+      'sha': doc.target.head.short,
+      'subject': doc.target.head.subject,
+      'threads': s.threads.length,
+      'waiting': s.threads.where((t) => t.needsAgent).length,
+    });
     return;
   }
 
@@ -204,8 +222,27 @@ Future<void> route(HttpRequest req, Session s, Doc doc) async {
   await r.close();
 }
 
-Future<void> serve(
-    String repo, int port, bool open, Doc doc, String? outPath) async {
+/// Binds [port], or the next free port after it when [exact] is false.
+///
+/// Reviews are long-running and it is normal to have one open per repository,
+/// so the default port is often already taken. Failing outright would make
+/// "just open a review" unreliable; taking the next port and printing it does
+/// not. An explicitly requested port is never silently substituted.
+Future<HttpServer> bindPort(int port, {required bool exact}) async {
+  for (var p = port; p <= (exact ? port : port + 20); p++) {
+    try {
+      return await HttpServer.bind(InternetAddress.loopbackIPv4, p);
+    } on SocketException {
+      if (p == port && !exact) {
+        stderr.writeln('review: port $port is in use, trying the next one');
+      }
+    }
+  }
+  throw SocketException('no free port in $port..${port + 20}');
+}
+
+Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
+    {bool exactPort = false}) async {
   final target = doc.target;
   final store = storeFor(repoRoot(repo));
   final s = Session(store, target.base)..load();
@@ -221,8 +258,18 @@ Future<void> serve(
   doc.rebuild();
   s.save();
 
-  final server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
+  final server = await bindPort(port, exact: exactPort);
   final url = 'http://127.0.0.1:${server.port}';
+  _identity = {
+    'app': 'commitreview',
+    'pid': pid,
+    'port': server.port,
+    'url': url,
+    'repo': repoRoot(repo),
+    'base': target.base,
+    'baseLabel': target.baseLabel,
+    'target': doc.label,
+  };
   stderr.writeln('review: $url  ${doc.label}  '
       '(${doc.lines.length} diff lines)');
   stderr.writeln('review: patchset ${target.head.n} ${target.head.short} '

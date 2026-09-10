@@ -42,6 +42,8 @@ system-prompt mechanism yours provides.
 
 ## What it covers
 
+- Opening a review: finding an existing server via `/whoami` before starting
+  one, and reporting the URL back
 - Reaching the server over MCP, and the HTTP fallback for when the server was
   started after the agent's session began
 - The loop: read pending comments, reply, commit, refresh, resolve
