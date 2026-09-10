@@ -10,20 +10,22 @@ so uncommitted edits are invisible to you.**
 
 ## Claude Code
 
-Copy the skill somewhere Claude Code looks for it.
-
-For one project, so it travels with the repository:
+The skill is bundled inside the `commitreview` binary, so you do not need this
+directory — or a clone — to install it:
 
 ```sh
-mkdir -p .claude/skills
-cp -r skills/commitreview .claude/skills/
+commitreview install-skill             # every project on this machine
+commitreview install-skill --project   # just this repository
 ```
 
-For every project on your machine:
+`SKILL.md` here is the source those are generated from
+(`dart run tool/embed_skill.dart`), and is what you read and edit. CI fails if
+the embedded copy falls behind it.
+
+Copying it by hand works too, if you would rather:
 
 ```sh
-mkdir -p ~/.claude/skills
-cp -r skills/commitreview ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
 ```
 
 On Windows, `%USERPROFILE%\.claude\skills\`.

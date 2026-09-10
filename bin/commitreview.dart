@@ -27,6 +27,9 @@ usage: commitreview [<base>] [options]
   (no base)          review the latest commit (HEAD~1..HEAD)
   <base>             review everything since <base>, e.g. `commitreview main`
 
+  install-skill      install the bundled agent skill, then exit
+                     (see: commitreview install-skill --help)
+
 options:
   --repo <path>      repository to run in (default: cwd)
   --port <n>         listen port (default: 4970, or the next one free)
@@ -52,6 +55,37 @@ persist in <repo>/.review/threads.json.
 }
 
 void main(List<String> argv) async {
+  // `install-skill` writes the agent skill that ships inside this binary, so
+  // teaching an agent the workflow never requires cloning the source.
+  if (argv.isNotEmpty && argv.first == 'install-skill') {
+    final rest = argv.skip(1).toList();
+    if (rest.contains('-h') || rest.contains('--help')) {
+      stderr.writeln('''
+usage: commitreview install-skill [options]
+
+  Writes the bundled agent skill so your coding agent knows how to run a
+  review: open one, read your comments, reply inline, commit, and refresh.
+
+options:
+  --project          install into ./.claude/skills (travels with the repo)
+                     instead of your user-level skills directory
+  --repo <path>      with --project, the repository to install into
+  --force            overwrite even if the file was edited locally
+
+Restart your agent afterwards so it picks the skill up.
+''');
+      exit(0);
+    }
+    final project = rest.contains('--project');
+    final ri = rest.indexOf('--repo');
+    installSkill(
+      project: project,
+      repo: ri >= 0 && ri + 1 < rest.length ? rest[ri + 1] : null,
+      force: rest.contains('--force'),
+    );
+    exit(0);
+  }
+
   var repo = Directory.current.path;
   var port = 4970;
   var open = true;

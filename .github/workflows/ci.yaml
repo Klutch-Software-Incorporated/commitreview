@@ -23,6 +23,13 @@ jobs:
       - name: Analyze
         run: dart analyze --fatal-infos
 
+      # The skill is embedded in the binary so it can be installed without a
+      # clone. Regenerate it and fail if the committed copy is behind.
+      - name: Check the embedded skill is current
+        run: |
+          dart run tool/embed_skill.dart
+          git diff --exit-code lib/src/skill.g.dart
+
       - name: Test
         run: dart test
 

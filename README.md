@@ -118,26 +118,26 @@ they did nothing, because only commits are reviewed.
 
 ### Install it
 
-If you cloned the repository:
+The skill is bundled inside the binary, so this needs nothing else — no
+clone, no download:
 
 ```sh
-mkdir -p ~/.claude/skills
-cp -r skills/commitreview ~/.claude/skills/
+commitreview install-skill
 ```
 
-If you installed with `dart pub global activate` and have no clone, fetch the
-skill on its own:
+That writes it to your user skills directory (`~/.claude/skills/` , or
+`%USERPROFILE%\.claude\skills\` on Windows), where it applies to every
+project.
+
+To install it into one repository instead, so it travels with the code and
+your team gets it too:
 
 ```sh
-mkdir -p ~/.claude/skills/commitreview
-curl -fsSL -o ~/.claude/skills/commitreview/SKILL.md \
-  https://raw.githubusercontent.com/Klutch-Software-Incorporated/commitreview/main/skills/commitreview/SKILL.md
+commitreview install-skill --project
 ```
 
-For a single project instead of your whole machine, use `.claude/skills/` in
-the repository, so it travels with the code and your team gets it too.
-
-On Windows the global path is `%USERPROFILE%\.claude\skills\`.
+Running it again is a no-op if nothing changed, and updates the file if the
+bundled skill has moved on — so it's safe to re-run after upgrading.
 
 Restart your agent afterwards, or start a new session, so it picks the skill
 up.
@@ -205,12 +205,17 @@ ignores itself, so review state never shows up as something to review.
 
 ```sh
 dart test
-dart run tool/check_page_js.dart
+dart run tool/check_page_js.dart    # the page script lives in a Dart string
+dart run tool/embed_skill.dart      # after editing skills/commitreview/SKILL.md
 ```
 
-The second one matters more than it looks: the page's JavaScript lives inside
+`check_page_js` matters more than it looks: the page's JavaScript lives inside
 a Dart string, so a broken literal compiles perfectly and then takes out the
 entire UI in the browser. It runs `node --check` over the real script.
+
+`embed_skill` regenerates `lib/src/skill.g.dart` from the skill markdown, which
+is what lets `commitreview install-skill` work without a clone. The markdown is
+the source of truth; CI regenerates and fails if the committed copy is behind.
 
 The tests build diffs by hand instead of shelling out to git, so they're fast
 and deterministic. They cover the cases that actually broke while this was
