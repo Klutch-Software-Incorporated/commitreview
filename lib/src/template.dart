@@ -2,7 +2,11 @@
 library;
 
 const pageTemplate =
-    r'''<!doctype html><meta charset="utf-8"><title>review</title>
+    r'''<!doctype html><meta charset="utf-8"><title>commitreview</title>
+<!-- assets/commitreview-icon.svg, inlined so the page stays self-contained.
+     The artwork's stroke is a fixed dark navy, which disappears against a dark
+     browser chrome, so the favicon carries its own colour-scheme rule. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cstyle%3E*%7Bstroke:%23182230%7D@media(prefers-color-scheme:dark)%7B*%7Bstroke:%23c9d1d9%7D%7D%3C/style%3E%3Cpath d='M48 36h160a20 20 0 0 1 20 20v112a20 20 0 0 1-20 20h-54l-34 32v-32H48a20 20 0 0 1-20-20V56a20 20 0 0 1 20-20Z' fill='none' stroke-width='18' stroke-linejoin='round'/%3E%3Cpath d='M64 112h48m32 0h48' fill='none' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='128' cy='112' r='24' fill='%2335B67A' stroke-width='14'/%3E%3C/svg%3E">
 <style>
 /* Light is the base palette; dark overrides follow. Three states: no
    data-theme = follow the OS, data-theme=light/dark = pinned by the button. */
@@ -39,7 +43,10 @@ const pageTemplate =
 body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.5 ui-monospace,"Cascadia Mono",Consolas,monospace}
 header{position:sticky;top:0;z-index:5;background:var(--pan);border-bottom:1px solid var(--bd);
   padding:10px 16px;display:flex;gap:14px;align-items:center}
-header .t{color:var(--mut)} header b{color:var(--acc)} .sp{flex:1}
+header .t{color:var(--mut)} header b{color:var(--fg)} .sp{flex:1}
+/* The mark takes its stroke from the header text, so it reads in either
+   theme; only the commit node keeps a fixed colour. */
+#logo{width:18px;height:18px;flex:none;color:var(--fg)}
 button{background:var(--btn);color:#fff;border:0;padding:7px 14px;border-radius:6px;cursor:pointer;font:inherit}
 button.g{background:var(--gbtn);color:var(--fg);border:1px solid var(--bd)}
 button.sm{font-size:12px;padding:4px 9px;color:var(--mut)}
@@ -176,7 +183,13 @@ pre.snap .at{background:var(--cm);color:var(--fg);display:inline-block;
 #rl button{font-size:12px;padding:3px 9px;margin:0 2px}
 </style>
 <header>
-  <b>review</b><span class="t">__TARGET__</span>
+  <svg id="logo" viewBox="0 0 256 256" aria-hidden="true">
+    <path d="M48 36h160a20 20 0 0 1 20 20v112a20 20 0 0 1-20 20h-54l-34 32v-32H48a20 20 0 0 1-20-20V56a20 20 0 0 1 20-20Z"
+      fill="none" stroke="currentColor" stroke-width="18" stroke-linejoin="round"/>
+    <path d="M64 112h48m32 0h48" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="128" cy="112" r="24" fill="#35B67A" stroke="currentColor" stroke-width="14"/>
+  </svg>
+  <b>commitreview</b><span class="t">__TARGET__</span>
   <span class="t" id="ps" title="Each commit reviewed is a patchset"></span>
   <span class="t"><span id="vn">0/0</span> viewed</span>
   <span class="sp"></span>

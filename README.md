@@ -1,3 +1,5 @@
+<img src="assets/commitreview-icon.svg" alt="" width="88" align="right">
+
 # commitreview
 
 Review a commit in your browser, leave comments on the lines you care about,

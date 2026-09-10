@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">commitreview icon</title>
+  <desc id="desc">A Git commit node inside a code review comment bubble.</desc>
+
+  <!-- The outline follows the viewer's colour scheme, so the mark stays
+       legible on a dark README or page as well as a light one. The commit
+       node keeps its colour either way. -->
+  <style>
+    .ink { stroke: #182230; }
+    @media (prefers-color-scheme: dark) { .ink { stroke: #e6edf3; } }
+  </style>
+
+  <!-- Speech bubble -->
+  <path
+    class="ink"
+    d="M48 36h160a20 20 0 0 1 20 20v112a20 20 0 0 1-20 20h-54l-34 32v-32H48a20 20 0 0 1-20-20V56a20 20 0 0 1 20-20Z"
+    fill="none"
+    stroke-width="18"
+    stroke-linejoin="round"
+  />
+
+  <!-- Commit graph -->
+  <path class="ink" d="M64 112h48m32 0h48" fill="none" stroke-width="18" stroke-linecap="round" />
+  <circle class="ink" cx="128" cy="112" r="24" fill="#35B67A" stroke-width="14" />
+</svg>
