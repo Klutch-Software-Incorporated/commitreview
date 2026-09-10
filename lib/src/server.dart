@@ -229,6 +229,33 @@ Future<void> route(HttpRequest req, Session s, Doc doc) async {
 /// so the default port is often already taken. Failing outright would make
 /// "just open a review" unreliable; taking the next port and printing it does
 /// not. An explicitly requested port is never silently substituted.
+/// Where a running server records itself, so anyone wondering whether a review
+/// is already open for a repository can read one file instead of probing the
+/// network.
+///
+/// Sweeping a port range with curl is a reasonable way to find a local server
+/// and an unreasonable-looking thing for an agent to do: it reads as port
+/// scanning, and permission classifiers refuse it. The question is anyway
+/// narrower than "what is listening on this machine" — it is "is there a
+/// review open for *this* repository", which belongs beside the repository.
+File serverInfoFile(String repoTop) => File('$repoTop/.review/server.json');
+
+void writeServerInfo(String repoTop, Map<String, dynamic> identity) {
+  try {
+    final f = serverInfoFile(repoTop);
+    f.parent.createSync(recursive: true);
+    f.writeAsStringSync(
+        '${const JsonEncoder.withIndent('  ').convert(identity)}\n');
+  } catch (_) {/* advisory only; never worth failing a review over */}
+}
+
+void clearServerInfo(String repoTop) {
+  try {
+    final f = serverInfoFile(repoTop);
+    if (f.existsSync()) f.deleteSync();
+  } catch (_) {/* see above */}
+}
+
 Future<HttpServer> bindPort(int port, {required bool exact}) async {
   for (var p = port; p <= (exact ? port : port + 20); p++) {
     try {
@@ -271,6 +298,7 @@ Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
     'baseLabel': target.baseLabel,
     'target': doc.label,
   };
+  writeServerInfo(repoRoot(repo), _identity);
   stderr.writeln('review: $url  ${doc.label}  '
       '(${doc.lines.length} diff lines)');
   stderr.writeln('review: patchset ${target.head.n} ${target.head.short} '
@@ -295,6 +323,7 @@ Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
     }
     if (_stop) break;
   }
+  clearServerInfo(repoRoot(repo));
   await server.close(force: true);
 
   final md = transcript(s, doc);

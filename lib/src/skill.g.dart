@@ -31,48 +31,67 @@ problems in this diff". Those are answered normally, in conversation.
 
 This is the default action when the user asks for a review.
 
-First, check whether one is already running for this repository. Servers
-self-identify at `/whoami`, and the port is not fixed: the default is 4970, but
-a busy port is skipped.
+First, check whether one is already running for this repository. A running
+server records itself in `.review/server.json` at the repository root:
 
 ```bash
-for p in $(seq 4970 4990); do curl -s -m 1 "http://127.0.0.1:$p/whoami"; echo; done
+cat .review/server.json
 ```
 
-Each answer includes `url`, `pid`, `repo`, `target` and `patchset`. If one
-already covers this repository, use it and give the user its URL. Never start a
-second server for a repository that already has one, and never stop a server
-the user started.
+If the file is there, confirm the server is actually alive before trusting it,
+since the file outlives a crash:
 
-If none is running, start one in the background from the repository root. First
-pick the command, `<cr>` below, since how it is installed varies:
+```bash
+curl -s -m 2 "$(python -c "import json;print(json.load(open('.review/server.json'))['url'])")/whoami"
+```
+
+Use that server and give the user its URL. Never start a second server for a
+repository that already has one, and never stop a server the user started.
+
+Do **not** sweep a port range looking for servers. It reads as port scanning,
+permission classifiers refuse it, and the question is narrower than that
+anyway: you want this repository's review, which is what the file answers.
+
+### Picking the command
+
+How it is installed varies, and getting this wrong wastes a round trip:
 
 - `commitreview`, if it resolves.
-- `commitreview.bat` on Windows when you are running through a POSIX shell.
-  `dart pub global activate` installs a `.bat` shim, which is on `PATH` but
-  which bash will not find without the extension.
+- **`commitreview.bat` on Windows whenever you are going through bash**, which
+  includes the Bash tool and the user's `!` prefix. `dart pub global activate`
+  installs a `.bat` shim; it is on `PATH`, but bash will not find it without
+  the extension. Check with `command -v commitreview commitreview.bat`.
 - `dart pub global run commitreview` otherwise. Always works if the package is
   activated, just slower to start.
-- `./commitreview.exe` or `dart run bin/commitreview.dart` when working from a
-  clone.
+- `./commitreview.exe` or `dart run bin/commitreview.dart` from a clone.
 
-```bash
-<cr> > /tmp/commitreview.log 2>&1 &
-sleep 2
-grep -m1 'http://' /tmp/commitreview.log
-```
+Whatever you settle on, use that exact form again when you hand a command to
+the user. Telling someone to run `commitreview` when only `commitreview.bat`
+resolves for them just fails twice.
+
+### Starting it
+
+Run it with the Bash tool's **`run_in_background` option**, with no shell
+redirection and no trailing `&`. Redirecting output to a file to background it
+looks like hiding output from the conversation, and gets refused.
 
 - With no argument it reviews the latest commit (`HEAD~1..HEAD`).
-- With a ref it reviews everything since that ref, e.g. `<cr> main` for a whole
-  branch.
+- With a ref it reviews everything since that ref, e.g. `main` for a whole
+  branch. If you have made several commits the user has not seen, a base ref
+  covering all of them beats reviewing only the last.
 
-Pick the one that matches what the user wants reviewed. If you have made
-several commits they have not seen, a base ref covering them all is usually
-better than just the last one.
+The server prints its URL on startup. Give the user that URL.
 
-If the log is empty after a couple of seconds, wait and check again, since a
-first run compiles. If it reports an error, show it to the user rather than
-retrying blindly.
+### If starting it is refused
+
+Launching a long-running local server is exactly the shape of thing a
+permission classifier declines, and that is not a fault to work around. Stop
+and hand it over, rather than trying variations:
+
+> Run `commitreview.bat` yourself with `! commitreview.bat` and I'll pick it
+> up from the output — or allow it once and I'll start it.
+
+Use the command form you established above. Then wait.
 
 Then tell the user:
 
