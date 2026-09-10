@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.0
+
+Setting up a repository took four manual steps, and the CLI's errors sent you
+down the wrong path when you got one wrong. Both fixed after watching a
+first-time setup go sideways.
+
+- `commitreview init` does the setup in one command: adds this tool to
+  `.mcp.json` while keeping any servers already configured there, installs the
+  agent skill, and makes `.review/` ignore itself. Safe to re-run, and it
+  refuses to touch a `.mcp.json` it cannot parse.
+- `--version`, which did not exist. `dart pub global activate --source git`
+  pins whichever commit was current at the time, so two installs could both
+  call themselves 0.4.0 and behave differently, with no way to tell.
+- Unknown options are now rejected by name. A typo like `--prot` used to be
+  treated as a git ref and reported as "expected at most one base ref".
+- A mistyped or unavailable subcommand says so, rather than reporting that
+  `install-skill` could not be resolved to a commit, and points out that an
+  install can be older than the docs.
+- Git output is decoded as UTF-8 rather than the system encoding. On Windows
+  every accented character, CJK glyph and emoji in a diff was mojibake.
+
 ## 0.4.0
 
 First public release.

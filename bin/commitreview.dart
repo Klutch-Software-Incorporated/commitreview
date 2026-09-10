@@ -19,6 +19,25 @@ import 'dart:io';
 
 import 'package:commitreview/commitreview.dart';
 
+/// Every subcommand, so an unrecognised one can be named as such instead of
+/// being mistaken for a git ref.
+const commands = {'init', 'install-skill'};
+
+/// Flags the review command accepts. An unknown flag used to fall through to
+/// the ref list, so `--verison` reported "expected at most one base ref".
+const flags = {
+  '--repo',
+  '--port',
+  '--out',
+  '--no-open',
+  '--split',
+  '--unified',
+  '--version',
+  '-v',
+  '--help',
+  '-h',
+};
+
 void usage() {
   stderr.writeln('''
 usage: commitreview [<base>] [options]
@@ -26,8 +45,12 @@ usage: commitreview [<base>] [options]
   (no base)          review the latest commit (HEAD~1..HEAD)
   <base>             review everything since <base>, e.g. `commitreview main`
 
+commands:
+  init               set this repository up for an agent, then exit
+                     (writes .mcp.json, installs the skill)
   install-skill      install the bundled agent skill, then exit
-                     (see: commitreview install-skill --help)
+
+  Both take --help of their own.
 
 options:
   --repo <path>      repository to run in (default: cwd)
@@ -36,6 +59,7 @@ options:
   --no-open          do not launch a browser
   --split            start in side-by-side view
   --unified          start in unified view
+  --version, -v      print the version and exit
 
 Commits are the unit of review, as in Gerrit: the base is resolved once and
 pinned, and each new head commit becomes the next patchset. Uncommitted work
@@ -53,9 +77,12 @@ persist in <repo>/.review/threads.json.
 ''');
 }
 
+String? _valueAfter(List<String> args, String flag) {
+  final i = args.indexOf(flag);
+  return i >= 0 && i + 1 < args.length ? args[i + 1] : null;
+}
+
 void main(List<String> argv) async {
-  // `install-skill` writes the agent skill that ships inside this binary, so
-  // teaching an agent the workflow never requires cloning the source.
   if (argv.isNotEmpty && argv.first == 'install-skill') {
     final rest = argv.skip(1).toList();
     if (rest.contains('-h') || rest.contains('--help')) {
@@ -75,13 +102,48 @@ Restart your agent afterwards so it picks the skill up.
 ''');
       exit(0);
     }
-    final project = rest.contains('--project');
-    final ri = rest.indexOf('--repo');
     installSkill(
-      project: project,
-      repo: ri >= 0 && ri + 1 < rest.length ? rest[ri + 1] : null,
+      project: rest.contains('--project'),
+      repo: _valueAfter(rest, '--repo'),
       force: rest.contains('--force'),
     );
+    exit(0);
+  }
+
+  // Setting a repository up by hand means writing .mcp.json, installing the
+  // skill, and knowing that both are read at agent-session start. That is
+  // three chances to get it wrong, so do it in one command.
+  if (argv.isNotEmpty && argv.first == 'init') {
+    final rest = argv.skip(1).toList();
+    if (rest.contains('-h') || rest.contains('--help')) {
+      stderr.writeln('''
+usage: commitreview init [options]
+
+  Sets a repository up so an agent can take part in reviews:
+    - adds this tool to .mcp.json, keeping any servers already configured
+    - installs the bundled agent skill
+    - makes .review/ ignore itself, so review state is never reviewable
+
+options:
+  --repo <path>      repository to set up (default: cwd)
+  --port <n>         port to record in .mcp.json (default: 4970)
+  --project          install the skill into this repo rather than for your
+                     user, so it travels with the code
+
+Safe to re-run: it merges rather than overwrites.
+''');
+      exit(0);
+    }
+    initRepo(
+      _valueAfter(rest, '--repo') ?? Directory.current.path,
+      int.tryParse(_valueAfter(rest, '--port') ?? '') ?? 4970,
+      projectSkill: rest.contains('--project'),
+    );
+    exit(0);
+  }
+
+  if (argv.contains('--version') || argv.contains('-v')) {
+    stdout.writeln('commitreview $version');
     exit(0);
   }
 
@@ -113,13 +175,20 @@ Restart your agent afterwards so it picks the skill up.
       exit(0);
     } else if (a == 'serve' && refs.isEmpty) {
       // Accepted and ignored: serving is the only mode.
+    } else if (a.startsWith('-')) {
+      // Unknown flags used to land in the ref list, so a typo surfaced as
+      // "cannot resolve --verison to a commit", which explains nothing.
+      stderr.writeln('commitreview: unknown option "$a"');
+      stderr.writeln('Options: ${flags.toList().join(', ')}');
+      stderr.writeln('Run `commitreview --help` for details.');
+      exit(2);
     } else {
       refs.add(a);
     }
   }
 
   if (refs.length > 1) {
-    stderr.writeln('review: expected at most one base ref, got '
+    stderr.writeln('commitreview: expected at most one base ref, got '
         '${refs.join(' ')}');
     exit(2);
   }
@@ -132,9 +201,20 @@ Restart your agent afterwards so it picks the skill up.
   final target = Target.resolveFor(repo, refs.isEmpty ? null : refs.first,
       saved: saved is Map ? saved.cast<String, dynamic>() : null);
   if (target == null) {
-    stderr.writeln(refs.isEmpty
-        ? 'review: no commits in this repository yet.'
-        : 'review: cannot resolve "${refs.first}" to a commit.');
+    if (refs.isEmpty) {
+      stderr.writeln('commitreview: no commits in this repository yet.');
+      exit(1);
+    }
+    stderr.writeln('commitreview: cannot resolve "${refs.first}" to a commit.');
+    // A word with a hyphen is far more likely to be a mistyped subcommand
+    // than a branch. Saying so beats leaving someone to work out why
+    // `install-skill` was treated as a git ref.
+    if (RegExp(r'^[a-z][a-z0-9]*(-[a-z0-9]+)+$').hasMatch(refs.first)) {
+      stderr.writeln('Did you mean a command? '
+          'This version has: ${commands.toList().join(', ')}.');
+      stderr.writeln('If the command you want is missing, your install is '
+          'older than the docs; re-run `dart pub global activate`.');
+    }
     exit(1);
   }
 

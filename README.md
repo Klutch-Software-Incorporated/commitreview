@@ -20,13 +20,16 @@ Or download a binary for your platform from
 [Releases](https://github.com/Klutch-Software-Incorporated/commitreview/releases)
 and put it on your `PATH`. It is self-contained, so this needs no Dart at all.
 
-Then install the skill that teaches your agent to use it:
+Then, in the repository you want reviewed, set it up for your agent:
 
 ```bash
-commitreview install-skill
+commitreview init
 ```
 
-Restart your agent so it picks up the skill. Then from any git repository:
+That adds this tool to `.mcp.json` (keeping any servers already there) and
+installs the skill that teaches your agent the workflow.
+
+Restart your agent so it picks both up. Then:
 
 ```bash
 commitreview  # review the latest commit in the browser
@@ -39,6 +42,13 @@ becomes the next round, with your comments still on the right lines.
 If `commitreview` isn't found after activating it, add Dart's pub cache to your
 `PATH` (`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows),
 or run it as `dart pub global run commitreview`.
+
+On Windows, `dart pub global activate` installs a `.bat` shim. That resolves
+fine in PowerShell and cmd, but **Git Bash won't find it without the
+extension** — use `commitreview.bat` there.
+
+`commitreview --version` tells you which build you have, which is worth
+checking if a documented command seems to be missing.
 
 ## Usage
 
@@ -73,6 +83,27 @@ written on.
 Comments live in `.review/threads.json` in your repository, in a directory that
 ignores itself so review state never shows up as something to review.
 
+### init
+
+Sets a repository up so an agent can take part in reviews. Safe to re-run; it
+merges rather than overwrites.
+
+```bash
+commitreview init
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--repo <path>` | cwd | Repository to set up |
+| `--port <n>` | 4970 | Port to record in `.mcp.json` |
+| `--project` | false | Install the skill into this repo rather than for your user |
+| `-h`, `--help` | — | Show usage |
+
+It adds this tool to `.mcp.json` while keeping any servers already configured,
+installs the agent skill, and makes `.review/` ignore itself so review state is
+never itself reviewable. If `.mcp.json` exists but can't be parsed, it is left
+alone and you're told what to add.
+
 ### install-skill
 
 Writes the bundled agent skill, so your agent knows how to open a review, read
@@ -102,8 +133,8 @@ start, so a server that isn't listening yet won't show up as tools. An agent
 that starts the server itself falls back to plain HTTP against the same
 endpoint. That works, but it is second best.
 
-**Point your agent at it.** Copy `.mcp.json.example` into the repository you're
-reviewing as `.mcp.json`:
+**Point your agent at it.** `commitreview init` does this for you. By hand, it
+is an entry in the repository's `.mcp.json`:
 
 ```json
 {

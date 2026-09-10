@@ -2,7 +2,7 @@ name: commitreview
 description: >-
   Review a commit in your browser and hand the comments to your AI coding agent
   over MCP, so it can answer them and commit the changes back.
-version: 0.4.0
+version: 0.5.0
 repository: https://github.com/Klutch-Software-Incorporated/commitreview
 issue_tracker: https://github.com/Klutch-Software-Incorporated/commitreview/issues
 

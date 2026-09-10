@@ -13,5 +13,6 @@ export 'src/markdown.dart';
 export 'src/mcp.dart';
 export 'src/model.dart';
 export 'src/server.dart';
+export 'src/setup.dart';
 export 'src/skill_install.dart';
 export 'src/target.dart';
