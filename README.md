@@ -10,11 +10,19 @@ commit the changes back.
 
 ## Quickstart
 
-Install the tool, then the skill that teaches your agent to use it:
+With the [Dart SDK](https://dart.dev/get-dart):
 
 ```bash
-dart pub global activate --source git \
-  https://github.com/Klutch-Software-Incorporated/commitreview.git
+dart pub global activate commitreview
+```
+
+Or download a binary for your platform from
+[Releases](https://github.com/Klutch-Software-Incorporated/commitreview/releases)
+and put it on your `PATH`. It is self-contained, so this needs no Dart at all.
+
+Then install the skill that teaches your agent to use it:
+
+```bash
 commitreview install-skill
 ```
 
@@ -28,9 +36,9 @@ Click any line to comment, then tell your agent you've left comments. It
 replies to what you asked and commits what you wanted changed. That commit
 becomes the next round, with your comments still on the right lines.
 
-If `commitreview` isn't found, add Dart's pub cache to your `PATH`
-(`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows), or run
-it as `dart pub global run commitreview`.
+If `commitreview` isn't found after activating it, add Dart's pub cache to your
+`PATH` (`$HOME/.pub-cache/bin`, or `%LOCALAPPDATA%\Pub\Cache\bin` on Windows),
+or run it as `dart pub global run commitreview`.
 
 ## Usage
 
@@ -139,6 +147,24 @@ dart compile exe bin/commitreview.dart -o commitreview
 
 There are no runtime dependencies, so the result can be dropped anywhere on
 your `PATH`.
+
+### Releasing
+
+Bump `version:` in `pubspec.yaml`, add a `CHANGELOG.md` entry, then tag:
+
+```bash
+git tag v0.4.0 && git push origin v0.4.0
+```
+
+That runs the release workflow: it checks the tag matches the pubspec version,
+runs the tests, creates the GitHub release, and attaches a binary built on
+Linux, macOS (Intel and Apple silicon) and Windows.
+
+Publishing to pub.dev is a separate opt-in job in the same workflow. The
+package has to exist there first, so run `dart pub publish` once by hand, then
+enable automated publishing for this repository on pub.dev and set the
+repository variable `PUBLISH_TO_PUB_DEV` to `true`. After that a tag publishes
+both. It uses a short-lived OIDC token rather than a stored credential.
 
 ## Requirements
 

@@ -1,0 +1,90 @@
+name: Release
+
+# Tag a version to cut a release:
+#
+#   git tag v0.4.0 && git push origin v0.4.0
+#
+# Builds a standalone binary per platform and attaches them to the GitHub
+# release. Publishing to pub.dev is a separate job, off until you turn it on.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      # A tag that disagrees with the pubspec produces a release whose binaries
+      # report a different version than the tag promises.
+      - name: Tag matches the pubspec version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(grep '^version:' pubspec.yaml | awk '{print $2}')"
+          if [ "$tag" != "$pkg" ]; then
+            echo "tag $tag does not match pubspec version $pkg"
+            exit 1
+          fi
+
+      - run: dart pub get
+      - run: dart analyze --fatal-infos
+      - run: dart test
+
+  create-release:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create the release
+        run: gh release create "${{ github.ref_name }}" --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  binaries:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: commitreview-linux-x64
+          - os: macos-latest
+            asset: commitreview-macos-arm64
+          - os: macos-13
+            asset: commitreview-macos-x64
+          - os: windows-latest
+            asset: commitreview-windows-x64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart compile exe bin/commitreview.dart -o ${{ matrix.asset }}
+      - name: Attach to the release
+        run: gh release upload "${{ github.ref_name }}" "${{ matrix.asset }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # Publishing to pub.dev is opt-in. The package has to exist there first —
+  # run `dart pub publish` by hand once, then enable automated publishing on
+  # pub.dev for this repository, then set the repository variable
+  # PUBLISH_TO_PUB_DEV to "true". No secrets are involved; pub.dev trusts a
+  # short-lived OIDC token from this workflow.
+  publish:
+    needs: verify
+    if: vars.PUBLISH_TO_PUB_DEV == 'true'
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
