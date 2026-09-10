@@ -22,10 +22,10 @@ import 'package:commitreview/commitreview.dart';
 
 void usage() {
   stderr.writeln('''
-usage: review [<base>] [options]
+usage: commitreview [<base>] [options]
 
   (no base)          review the latest commit (HEAD~1..HEAD)
-  <base>             review everything since <base>, e.g. `review main`
+  <base>             review everything since <base>, e.g. `commitreview main`
 
 options:
   --repo <path>      repository to run in (default: cwd)
