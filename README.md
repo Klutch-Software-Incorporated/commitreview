@@ -7,17 +7,10 @@ makes the changes, and commits them back into the same review.
 Then you review the next commit, with your comments still attached to the
 right lines.
 
-## Why
-
-Reviewing what an AI agent wrote is awkward. Your editor shows you the diff
-but gives you nowhere to *respond* to it, so feedback ends up retyped into a
-chat window, detached from the code it was about. And half of review isn't
-"change this" — it's "why did you do it this way?", which a diff viewer has no
-answer for.
-
-commitreview gives each line a conversation. You ask, the agent answers where
-the code is, and when it makes a change you asked for, the next commit shows
-up as the next round with the thread still in place.
+Your editor can already show you a diff, but it gives you nowhere to *respond*
+to one — feedback gets retyped into a chat window, detached from the code it
+was about. And half of review isn't "change this", it's "why did you do it
+this way?". commitreview gives each line a conversation instead.
 
 ## Requirements
 
@@ -78,10 +71,15 @@ It prints a URL and opens your browser. Click any line to comment; click
 | `--split` / `--unified` | pick the starting diff view |
 | `--out <file>` | also write the review to a file on exit |
 
-The server keeps running until you stop it. Comments save as you write them.
+The server keeps running until you stop it. Comments save as you write them,
+into `.review/threads.json` in your repository — a directory that ignores
+itself, so review state never shows up as something to review.
 
 **Uncommitted work is not reviewed.** Commits are the unit of review, the way
-they are in Gerrit — so commit, then refresh.
+they are in Gerrit — so commit, then refresh. When you do, your comments are
+carried onto the new commit by git: one that moved goes with it, one whose
+line was edited is marked, and one whose line is gone is kept and shown
+against the commit it was written on.
 
 ## Connecting your agent
 
@@ -118,10 +116,8 @@ they did nothing, because only commits are reviewed.
 
 ### Install it
 
-Either way works; neither needs a clone.
-
-**From the binary.** The skill is bundled inside it, so this needs nothing
-else installed:
+The skill is bundled inside the binary, so this needs nothing else — no
+clone, no download, no other tooling:
 
 ```sh
 commitreview install-skill             # every project on this machine
@@ -131,15 +127,6 @@ commitreview install-skill --project   # just this repository
 Re-running is a no-op if nothing changed, and updates the file if the bundled
 skill has moved on — so it's safe after an upgrade. It writes to
 `~/.claude/skills/`, or `%USERPROFILE%\.claude\skills\` on Windows.
-
-**With [skills.sh](https://skills.sh).** If you already use the open agent
-skills ecosystem, this repository works with it directly, and covers Codex,
-Cursor, Zed, Amp and others rather than just Claude Code:
-
-```sh
-npx skills add Klutch-Software-Incorporated/commitreview -g   # global
-npx skills add Klutch-Software-Incorporated/commitreview      # this project
-```
 
 Restart your agent afterwards, or start a new session, so it picks the skill
 up.
@@ -171,37 +158,6 @@ waits. Say when you're done commenting and the agent picks it up from there.
   left was a question
 
 See [skills/](skills/) for use with agents other than Claude Code.
-
-## How comments survive new commits
-
-This is the part that's easy to get wrong, so it's worth explaining.
-
-Each commit you review is a **patchset**. The base you're comparing against is
-resolved once and pinned — including across restarts — so amending a commit
-and adding a new one both behave sensibly. (If the base tracked `HEAD~1` it
-would slide forward, and you'd end up reviewing only the most recent fix.)
-
-When you commit again, comments are carried onto the new commit using git's
-own line mapping:
-
-| What happened to the line | Where the comment goes |
-|---|---|
-| It just moved | with it, quietly |
-| It was edited | with it, marked **Line edited** |
-| Nothing in the rewrite corresponds to it | kept, marked **Not in this patchset** |
-
-Git decides what moved, so there's nothing to tune and no fuzzy searching
-through your files. Comments on **deleted** lines point into the pinned base,
-so they never move at all.
-
-Nothing is ever thrown away. A comment that falls out of the current diff
-moves to a collapsible panel showing the code as it was when you wrote it, and
-you can still reply to it and resolve it. Since a patchset is an immutable
-commit, that view stays accurate indefinitely — reviewed commits are pinned
-under `refs/review/*` so a rebase or squash can't let `git gc` collect them.
-
-Comments live in `.review/threads.json` in your repository. The directory
-ignores itself, so review state never shows up as something to review.
 
 ## Development
 

@@ -10,32 +10,30 @@ so uncommitted edits are invisible to you.**
 
 ## Installing
 
-You need neither this directory nor a clone.
-
-**From the binary** — the skill is bundled inside it:
+The skill is bundled inside the `commitreview` binary, so you need neither
+this directory nor a clone:
 
 ```sh
 commitreview install-skill             # every project on this machine
 commitreview install-skill --project   # just this repository
 ```
 
-**With [skills.sh](https://skills.sh)** — the layout here follows the
-ecosystem convention (`skills/<name>/SKILL.md`), so this repository works with
-it as-is, and covers Codex, Cursor, Zed, Amp and others rather than just
-Claude Code:
+That is the supported path: no Node, no network, and always the skill that
+matches the binary you are running.
 
-```sh
-npx skills add Klutch-Software-Incorporated/commitreview -g   # global
-npx skills add Klutch-Software-Incorporated/commitreview      # this project
-```
-
-**By hand**, if you would rather:
+Copying it by hand works too:
 
 ```sh
 mkdir -p ~/.claude/skills && cp -r skills/commitreview ~/.claude/skills/
 ```
 
 On Windows, `%USERPROFILE%\.claude\skills\`.
+
+The layout here also happens to follow the `skills/<name>/SKILL.md`
+convention used by [skills.sh](https://skills.sh), so
+`npx skills add Klutch-Software-Incorporated/commitreview` works if you
+already live in that ecosystem. It is not required, and nothing here depends
+on it.
 
 Claude loads the skill on its own when you say something like "open a review"
 or "I've left some comments". You can also invoke it directly with

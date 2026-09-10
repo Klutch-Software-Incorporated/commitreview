@@ -14,6 +14,10 @@ String skillDir({required bool project, String? repo}) {
   return '$home/.claude/skills';
 }
 
+/// Paths are built with `/`, which Dart accepts everywhere, but printing that
+/// next to a Windows home directory gives `C:\Users\me/.claude/...`.
+String _show(String p) => Platform.isWindows ? p.replaceAll('/', r'\') : p;
+
 /// Writes the embedded skill to disk. Returns the path written.
 ///
 /// The skill ships inside the binary rather than being fetched or copied out
@@ -27,15 +31,15 @@ String installSkill({required bool project, String? repo, bool force = false}) {
     final existing = file.readAsStringSync().replaceAll('\r\n', '\n');
     if (existing.trim() == skillMarkdown.trim()) {
       stdout.writeln('commitreview: skill already installed and up to date at '
-          '${file.path}');
+          '${_show(file.path)}');
       return file.path;
     }
-    stdout.writeln('commitreview: updating the skill at ${file.path}');
+    stdout.writeln('commitreview: updating the skill at ${_show(file.path)}');
   }
 
   dir.createSync(recursive: true);
   file.writeAsStringSync(skillMarkdown);
-  stdout.writeln('commitreview: installed the skill to ${file.path}');
+  stdout.writeln('commitreview: installed the skill to ${_show(file.path)}');
   stdout.writeln('commitreview: restart your agent, or start a new session, '
       'for it to be picked up.');
   return file.path;
