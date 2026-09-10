@@ -10,9 +10,52 @@ import 'skill_install.dart';
 /// same version as a newer one is genuinely confusing: `dart pub global
 /// activate --source git` pins whatever commit was current at the time, so
 /// two people on "0.4.0" can have different builds.
-const version = '0.5.1';
+const version = '0.5.2';
 
 const _mcpServerName = 'commitreview';
+
+/// The port this repository's `.mcp.json` points at, if it has an entry.
+///
+/// A repository's MCP config is per-repository but a port is machine-wide, so
+/// two repositories both hardcoding 4970 collide: the second server takes the
+/// next free port, its config still says 4970, and the agent's MCP tools end
+/// up connected to the *other* repository's review. Silently answering the
+/// wrong review is worse than failing, so the server reads the port back out
+/// of the config and binds what the agent was told to expect.
+int? portFromMcpConfig(String repoTop) {
+  try {
+    final file = File('$repoTop/.mcp.json');
+    if (!file.existsSync()) return null;
+    final root = jsonDecode(file.readAsStringSync());
+    if (root is! Map) return null;
+    final servers = root['mcpServers'];
+    if (servers is! Map) return null;
+    final entry = servers[_mcpServerName];
+    if (entry is! Map) return null;
+    final url = entry['url'];
+    if (url is! String) return null;
+    return Uri.tryParse(url)?.port;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// First port from [first] that nothing is currently listening on.
+///
+/// Used when setting a repository up, so each one is handed a port of its own
+/// rather than every repository claiming 4970 and racing for it.
+Future<int> freePort(int first, {int span = 40}) async {
+  for (var p = first; p < first + span; p++) {
+    try {
+      final s = await ServerSocket.bind(InternetAddress.loopbackIPv4, p);
+      await s.close();
+      return p;
+    } on SocketException {
+      continue;
+    }
+  }
+  return first;
+}
 
 /// Adds this tool to a repository's `.mcp.json`, keeping anything already
 /// configured there. Returns a line describing what happened.
@@ -74,14 +117,23 @@ String writeReviewIgnore(String repoTop) {
 /// One-shot setup for a repository: MCP config, the agent skill, and the
 /// ignore rule. Everything the transcript of a first-time setup showed people
 /// doing by hand.
-void initRepo(String repo, int port, {bool projectSkill = false}) {
+Future<void> initRepo(String repo, int? port,
+    {bool projectSkill = false}) async {
   final top = repoRoot(repo);
   if (resolve(repo, 'HEAD') == null) {
     stdout.writeln('commitreview: note, $top has no commits yet. '
         'There is nothing to review until you make one.');
   }
 
-  stdout.writeln('commitreview: ${writeMcpConfig(top, port)}');
+  // Pick a port nothing else is on, so this repository's config and its server
+  // agree even when another review is already open elsewhere.
+  final chosen = port ?? portFromMcpConfig(top) ?? await freePort(4970);
+  if (port == null && chosen != 4970) {
+    stdout.writeln('commitreview: 4970 is taken, using $chosen for this '
+        'repository');
+  }
+
+  stdout.writeln('commitreview: ${writeMcpConfig(top, chosen)}');
   stdout.writeln('commitreview: ${writeReviewIgnore(top)}');
   installSkill(project: projectSkill, repo: top);
 

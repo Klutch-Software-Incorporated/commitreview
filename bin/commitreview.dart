@@ -134,9 +134,9 @@ Safe to re-run: it merges rather than overwrites.
 ''');
       exit(0);
     }
-    initRepo(
+    await initRepo(
       _valueAfter(rest, '--repo') ?? Directory.current.path,
-      int.tryParse(_valueAfter(rest, '--port') ?? '') ?? 4970,
+      int.tryParse(_valueAfter(rest, '--port') ?? ''),
       projectSkill: rest.contains('--project'),
     );
     exit(0);
@@ -216,6 +216,12 @@ Safe to re-run: it merges rather than overwrites.
           'older than the docs; re-run `dart pub global activate`.');
     }
     exit(1);
+  }
+
+  // The agent's MCP client connects to whatever .mcp.json says, so binding a
+  // different port hands it someone else's review. Prefer the configured one.
+  if (!exactPort) {
+    port = portFromMcpConfig(repoRoot(repo)) ?? port;
   }
 
   final doc = Doc(target, forceView);

@@ -7,6 +7,7 @@ import 'git.dart';
 import 'markdown.dart';
 import 'mcp.dart';
 import 'model.dart';
+import 'setup.dart';
 
 /// Set when the browser asks the server to stop; the accept loop checks it
 /// after finishing the request so the response still gets flushed.
@@ -308,6 +309,17 @@ Future<void> serve(String repo, int port, bool open, Doc doc, String? outPath,
   if (target.dirty) {
     stderr.writeln('review: uncommitted changes are NOT reviewed; '
         'commit them and refresh to see them.');
+  }
+  // An agent's MCP client connects to whatever .mcp.json said. If we could not
+  // get that port, its tools are pointed somewhere else — possibly at another
+  // repository's review, where a reply would land on the wrong code.
+  final configured = portFromMcpConfig(repoRoot(repo));
+  if (configured != null && configured != server.port) {
+    stderr.writeln('review: WARNING .mcp.json points at port $configured but '
+        'this server is on ${server.port}.');
+    stderr.writeln('review: an agent using MCP would reach a different '
+        'review. Run `commitreview init` to update it, or free port '
+        '$configured.');
   }
   if (open) launch(url);
 

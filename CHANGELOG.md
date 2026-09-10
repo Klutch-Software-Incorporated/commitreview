@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.2
+
+- A repository's `.mcp.json` records a port, but a port is machine-wide. Two
+  repositories both hardcoding 4970 meant the second server took the next free
+  port while its config still said 4970, so an agent's MCP tools reached the
+  *other* repository's review, where a reply would land on the wrong code.
+  `init` now assigns a port nothing is listening on and records it, the server
+  binds what the config promised, and a mismatch it cannot resolve is reported
+  loudly at startup rather than silently answering the wrong review.
+
 ## 0.5.1
 
 - Adds an example, which is what pub.dev was missing: a walkthrough of the CLI
