@@ -181,21 +181,24 @@ your `PATH`.
 
 ### Releasing
 
-Bump `version:` in `pubspec.yaml`, add a `CHANGELOG.md` entry, then tag:
+The version is declared in two places, and a test fails if they disagree:
+`version:` in `pubspec.yaml`, and `version` in `lib/src/setup.dart` (which is
+what `--version` reports). Bump both, add a `CHANGELOG.md` entry, then tag:
 
 ```bash
-git tag v0.4.0 && git push origin v0.4.0
+git tag v1.2.3 && git push origin v1.2.3
 ```
 
 That runs the release workflow: it checks the tag matches the pubspec version,
 runs the tests, creates the GitHub release, and attaches a binary built on
 Linux, macOS (Intel and Apple silicon) and Windows.
 
-Publishing to pub.dev is a separate opt-in job in the same workflow. The
-package has to exist there first, so run `dart pub publish` once by hand, then
-enable automated publishing for this repository on pub.dev and set the
-repository variable `PUBLISH_TO_PUB_DEV` to `true`. After that a tag publishes
-both. It uses a short-lived OIDC token rather than a stored credential.
+Publishing to [pub.dev](https://pub.dev/packages/commitreview) is a separate
+opt-in job in the same workflow. To turn it on, enable automated publishing for
+this repository in the package's pub.dev admin settings, then set the
+repository variable `PUBLISH_TO_PUB_DEV` to `true`. A tag then does both. It
+authenticates with a short-lived OIDC token, so there is no stored credential.
+Until then, publish with `dart pub publish` by hand.
 
 ## Requirements
 
